@@ -53,15 +53,23 @@ model =
 
 -- UPDATE
 
-checkEqual : Model -> Model
-checkEqual model = if model.password /= model.passwordAgain
+checkEqualLength : Model -> Model
+checkEqualLength model = if String.length model.passwordAgain > String.length model.password
   then
-    { model | validation = { message = ["Passwords are not equal", "somethings not right"]}}
+    { model | validation = { message = "Passwords are of different length" :: model.validation.message }}
   else
     { model | validation = { message = [""] } }
 
-validatePassword : String -> Model
-validatePassword password = { model | passwordAgain = password }
+checkEqual : Model -> Model
+checkEqual model = if model.passwordAgain == model.password
+  then
+    { model | validation = { message = [""] } }
+  else
+    { model | validation = { message = "Passwords are not the same" :: model.validation.message }}
+
+validatePassword : Model -> String -> Model
+validatePassword model passwordAgain = { model | passwordAgain = passwordAgain }
+  |> checkEqualLength
   |> checkEqual
 
 type Msg
@@ -80,8 +88,8 @@ update msg model =
     Password password ->
       { model | password = password }
 
-    PasswordAgain password ->
-      validatePassword password
+    PasswordAgain passwordAgain ->
+      validatePassword model passwordAgain
 
     SetAge age ->
       { model | age = age }
