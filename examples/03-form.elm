@@ -56,7 +56,7 @@ model =
 checkEqual : Model -> Model
 checkEqual model = if model.password /= model.passwordAgain
   then
-    { model | validation = { message = ["Passwords are not equal"]}}
+    { model | validation = { message = ["Passwords are not equal", "somethings not right"]}}
   else
     { model | validation = { message = [""] } }
 
@@ -94,11 +94,11 @@ update msg model =
 view : Model -> Html Msg
 view model =
   div []
-    [ input [ type_ "text", placeholder "Name", onInput Name ] []
-    , input [ type_ "password", placeholder "Password", onInput Password ] []
-    , input [ type_ "password", placeholder "Re-enter Password", onInput PasswordAgain ] []
-    , input [ type_ "input", placeholder "Age", onInput SetAge ] []
-    , viewValidation model
+    [ div [] [ span [] [ text "Name" ], input [ type_ "text", placeholder "Name", onInput Name ] [] ]
+    , div [] [ span [] [ text "Password" ], input [ type_ "password", placeholder "Password", onInput Password ] [] ]
+    , div [] [ span [] [ text "Re enter password" ], input [ type_ "password", placeholder "Re-enter Password", onInput PasswordAgain ] [] ]
+    , div [] [ span [] [ text "Age" ], input [ type_ "input", placeholder "Age", onInput SetAge ] [] ]
+    , viewValidation model.validation
     ]
 
 getMessage : Maybe String -> String
@@ -107,9 +107,18 @@ getMessage msg =
     Just value -> value
     Nothing -> ""
 
-viewValidation : Model -> Html msg
-viewValidation model =
+generateValidationMessage: String -> Html msg
+generateValidationMessage message =
+  div [ ] [ text message ]
+
+generateValidationMessageList: List String -> Html msg
+generateValidationMessageList msgList =
+  div [ class "validation" ] ( List.map generateValidationMessage msgList )
+
+viewValidation : Validation -> Html msg
+viewValidation validation =
   let
-    (color, message) = ("green", getMessage (List.head model.validation.message))
+    (color, message) = ("green",
+    validation.message)
   in
-    div [ style [("color", color)] ] [ text message ]
+    div [ style [("color", color)] ] [ generateValidationMessageList message ]
